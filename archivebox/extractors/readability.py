@@ -40,10 +40,7 @@ def get_html(link: Link, path: Path) -> str:
                 break
         except (FileNotFoundError, TypeError):
             continue
-    if document is None:
-        return download_url(link.url)
-    else:
-        return document
+    return download_url(link.url) if document is None else document
 
 @enforce_types
 def should_save_readability(link: Link, out_dir: Optional[str]=None, overwrite: Optional[bool]=False) -> bool:

@@ -90,18 +90,21 @@ def enforce_types(func):
             except KeyError:
                 annotation = None
 
-            if annotation is not None and annotation.__class__ is type:
-                if not isinstance(arg_val, annotation):
-                    raise TypeError(
-                        '{}(..., {}: {}) got unexpected {} argument {}={}'.format(
-                            func.__name__,
-                            arg_key,
-                            annotation.__name__,
-                            type(arg_val).__name__,
-                            arg_key,
-                            str(arg_val)[:64],
-                        )
+            if (
+                annotation is not None
+                and annotation.__class__ is type
+                and not isinstance(arg_val, annotation)
+            ):
+                raise TypeError(
+                    '{}(..., {}: {}) got unexpected {} argument {}={}'.format(
+                        func.__name__,
+                        arg_key,
+                        annotation.__name__,
+                        type(arg_val).__name__,
+                        arg_key,
+                        str(arg_val)[:64],
                     )
+                )
 
         # check args
         for arg_val, arg_key in zip(args, sig.parameters):
@@ -149,14 +152,14 @@ def parse_date(date: Any) -> Optional[datetime]:
 
         assert date.tzinfo.utcoffset(datetime.now()).seconds == 0, 'Refusing to load a non-UTC date!'
         return date
-    
+
     if isinstance(date, (float, int)):
         date = str(date)
 
     if isinstance(date, str):
         return dateparser(date, settings={'TIMEZONE': 'UTC'}).replace(tzinfo=timezone.utc)
 
-    raise ValueError('Tried to parse invalid date! {}'.format(date))
+    raise ValueError(f'Tried to parse invalid date! {date}')
 
 
 @enforce_types
@@ -230,7 +233,7 @@ def chrome_args(**options) -> List[str]:
 
     if options['CHROME_HEADLESS']:
         cmd_args += ('--headless',)
-    
+
     if not options['CHROME_SANDBOX']:
         # assume this means we are running inside a docker container
         # in docker, GPU support is limited, sandboxing is unecessary, 
@@ -251,17 +254,17 @@ def chrome_args(**options) -> List[str]:
         cmd_args += ('--disable-web-security', '--ignore-certificate-errors')
 
     if options['CHROME_USER_AGENT']:
-        cmd_args += ('--user-agent={}'.format(options['CHROME_USER_AGENT']),)
+        cmd_args += (f"--user-agent={options['CHROME_USER_AGENT']}", )
 
     if options['RESOLUTION']:
-        cmd_args += ('--window-size={}'.format(options['RESOLUTION']),)
+        cmd_args += (f"--window-size={options['RESOLUTION']}", )
 
     if options['TIMEOUT']:
-        cmd_args += ('--timeout={}'.format(options['TIMEOUT'] * 1000),)
+        cmd_args += (f"--timeout={options['TIMEOUT'] * 1000}", )
 
     if options['CHROME_USER_DATA_DIR']:
-        cmd_args.append('--user-data-dir={}'.format(options['CHROME_USER_DATA_DIR']))
-    
+        cmd_args.append(f"--user-data-dir={options['CHROME_USER_DATA_DIR']}")
+
     return cmd_args
 
 
@@ -325,11 +328,11 @@ class ExtendedEncoder(pyjson.JSONEncoder):
             return obj.isoformat()
 
         elif isinstance(obj, Exception):
-            return '{}: {}'.format(obj.__class__.__name__, obj)
-        
+            return f'{obj.__class__.__name__}: {obj}'
+
         elif isinstance(obj, Path):
             return str(obj)
-        
+
         elif cls_name in ('dict_items', 'dict_keys', 'dict_values'):
             return tuple(obj)
 

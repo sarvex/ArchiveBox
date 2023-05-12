@@ -118,14 +118,16 @@ def parse_json_links_details(out_dir: Union[Path, str]) -> Iterator[Link]:
     """read through all the archive data folders and return the parsed links"""
 
     for entry in os.scandir(Path(out_dir) / ARCHIVE_DIR_NAME):
-        if entry.is_dir(follow_symlinks=True):
-            if (Path(entry.path) / 'index.json').exists():
-                try:
-                    link = parse_json_link_details(entry.path)
-                except KeyError:
-                    link = None
-                if link:
-                    yield link
+        if (
+            entry.is_dir(follow_symlinks=True)
+            and (Path(entry.path) / 'index.json').exists()
+        ):
+            try:
+                link = parse_json_link_details(entry.path)
+            except KeyError:
+                link = None
+            if link:
+                yield link
 
 
 
@@ -150,7 +152,7 @@ class ExtendedEncoder(pyjson.JSONEncoder):
             return obj.isoformat()
 
         elif isinstance(obj, Exception):
-            return '{}: {}'.format(obj.__class__.__name__, obj)
+            return f'{obj.__class__.__name__}: {obj}'
 
         elif cls_name in ('dict_items', 'dict_keys', 'dict_values'):
             return tuple(obj)

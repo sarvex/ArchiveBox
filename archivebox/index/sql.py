@@ -104,9 +104,7 @@ def write_sql_link_details(link: Link, out_dir: Path=OUTPUT_DIR) -> None:
         snap = write_link_to_sql_index(link)
     snap.title = link.title
 
-    tag_set = (
-        set(tag.strip() for tag in (link.tags or '').split(','))
-    )
+    tag_set = {tag.strip() for tag in (link.tags or '').split(',')}
     tag_list = list(tag_set) or []
 
     snap.save()

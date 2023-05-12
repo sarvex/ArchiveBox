@@ -19,6 +19,7 @@ Documentation:
 
 """
 
+
 __package__ = 'archivebox'
 
 import os
@@ -61,146 +62,233 @@ except ModuleNotFoundError:
 
 CONFIG_SCHEMA: Dict[str, ConfigDefaultDict] = {
     'SHELL_CONFIG': {
-        'IS_TTY':                   {'type': bool,  'default': lambda _: sys.stdout.isatty()},
-        'USE_COLOR':                {'type': bool,  'default': lambda c: c['IS_TTY']},
-        'SHOW_PROGRESS':            {'type': bool,  'default': lambda c: (c['IS_TTY'] and platform.system() != 'Darwin')},  # progress bars are buggy on mac, disable for now
-        'IN_DOCKER':                {'type': bool,  'default': False},
+        'IS_TTY': {'type': bool, 'default': lambda _: sys.stdout.isatty()},
+        'USE_COLOR': {'type': bool, 'default': lambda c: c['IS_TTY']},
+        'SHOW_PROGRESS': {
+            'type': bool,
+            'default': lambda c: (
+                c['IS_TTY'] and platform.system() != 'Darwin'
+            ),
+        },  # progress bars are buggy on mac, disable for now
+        'IN_DOCKER': {'type': bool, 'default': False},
         # TODO: 'SHOW_HINTS':       {'type:  bool,  'default': True},
     },
-
     'GENERAL_CONFIG': {
-        'OUTPUT_DIR':               {'type': str,   'default': None},
-        'CONFIG_FILE':              {'type': str,   'default': None},
-        'ONLY_NEW':                 {'type': bool,  'default': True},
-        'TIMEOUT':                  {'type': int,   'default': 60},
-        'MEDIA_TIMEOUT':            {'type': int,   'default': 3600},
-        'OUTPUT_PERMISSIONS':       {'type': str,   'default': '644'},
-        'RESTRICT_FILE_NAMES':      {'type': str,   'default': 'windows'},
-        'URL_BLACKLIST':            {'type': str,   'default': r'\.(css|js|otf|ttf|woff|woff2|gstatic\.com|googleapis\.com/css)(\?.*)?$'},  # to avoid downloading code assets as their own pages
-        'URL_WHITELIST':            {'type': str,   'default': None},
-        'ENFORCE_ATOMIC_WRITES':    {'type': bool,  'default': True},
+        'OUTPUT_DIR': {'type': str, 'default': None},
+        'CONFIG_FILE': {'type': str, 'default': None},
+        'ONLY_NEW': {'type': bool, 'default': True},
+        'TIMEOUT': {'type': int, 'default': 60},
+        'MEDIA_TIMEOUT': {'type': int, 'default': 3600},
+        'OUTPUT_PERMISSIONS': {'type': str, 'default': '644'},
+        'RESTRICT_FILE_NAMES': {'type': str, 'default': 'windows'},
+        'URL_BLACKLIST': {
+            'type': str,
+            'default': r'\.(css|js|otf|ttf|woff|woff2|gstatic\.com|googleapis\.com/css)(\?.*)?$',
+        },  # to avoid downloading code assets as their own pages
+        'URL_WHITELIST': {'type': str, 'default': None},
+        'ENFORCE_ATOMIC_WRITES': {'type': bool, 'default': True},
     },
-
     'SERVER_CONFIG': {
-        'SECRET_KEY':               {'type': str,   'default': None},
-        'BIND_ADDR':                {'type': str,   'default': lambda c: ['127.0.0.1:8000', '0.0.0.0:8000'][c['IN_DOCKER']]},
-        'ALLOWED_HOSTS':            {'type': str,   'default': '*'},
-        'DEBUG':                    {'type': bool,  'default': False},
-        'PUBLIC_INDEX':             {'type': bool,  'default': True},
-        'PUBLIC_SNAPSHOTS':         {'type': bool,  'default': True},
-        'PUBLIC_ADD_VIEW':          {'type': bool,  'default': False},
-        'FOOTER_INFO':              {'type': str,   'default': 'Content is hosted for personal archiving purposes only.  Contact server owner for any takedown requests.'},
-        'SNAPSHOTS_PER_PAGE':       {'type': int,   'default': 40},
-        'CUSTOM_TEMPLATES_DIR':     {'type': str,   'default': None},
-        'TIME_ZONE':                {'type': str,   'default': 'UTC'},
+        'SECRET_KEY': {'type': str, 'default': None},
+        'BIND_ADDR': {
+            'type': str,
+            'default': lambda c: ['127.0.0.1:8000', '0.0.0.0:8000'][
+                c['IN_DOCKER']
+            ],
+        },
+        'ALLOWED_HOSTS': {'type': str, 'default': '*'},
+        'DEBUG': {'type': bool, 'default': False},
+        'PUBLIC_INDEX': {'type': bool, 'default': True},
+        'PUBLIC_SNAPSHOTS': {'type': bool, 'default': True},
+        'PUBLIC_ADD_VIEW': {'type': bool, 'default': False},
+        'FOOTER_INFO': {
+            'type': str,
+            'default': 'Content is hosted for personal archiving purposes only.  Contact server owner for any takedown requests.',
+        },
+        'SNAPSHOTS_PER_PAGE': {'type': int, 'default': 40},
+        'CUSTOM_TEMPLATES_DIR': {'type': str, 'default': None},
+        'TIME_ZONE': {'type': str, 'default': 'UTC'},
     },
-
     'ARCHIVE_METHOD_TOGGLES': {
-        'SAVE_TITLE':               {'type': bool,  'default': True, 'aliases': ('FETCH_TITLE',)},
-        'SAVE_FAVICON':             {'type': bool,  'default': True, 'aliases': ('FETCH_FAVICON',)},
-        'SAVE_WGET':                {'type': bool,  'default': True, 'aliases': ('FETCH_WGET',)},
-        'SAVE_WGET_REQUISITES':     {'type': bool,  'default': True, 'aliases': ('FETCH_WGET_REQUISITES',)},
-        'SAVE_SINGLEFILE':          {'type': bool,  'default': True, 'aliases': ('FETCH_SINGLEFILE',)},
-        'SAVE_READABILITY':         {'type': bool,  'default': True, 'aliases': ('FETCH_READABILITY',)},
-        'SAVE_MERCURY':             {'type': bool,  'default': True, 'aliases': ('FETCH_MERCURY',)},
-        'SAVE_PDF':                 {'type': bool,  'default': True, 'aliases': ('FETCH_PDF',)},
-        'SAVE_SCREENSHOT':          {'type': bool,  'default': True, 'aliases': ('FETCH_SCREENSHOT',)},
-        'SAVE_DOM':                 {'type': bool,  'default': True, 'aliases': ('FETCH_DOM',)},
-        'SAVE_HEADERS':             {'type': bool,  'default': True, 'aliases': ('FETCH_HEADERS',)},
-        'SAVE_WARC':                {'type': bool,  'default': True, 'aliases': ('FETCH_WARC',)},
-        'SAVE_GIT':                 {'type': bool,  'default': True, 'aliases': ('FETCH_GIT',)},
-        'SAVE_MEDIA':               {'type': bool,  'default': True, 'aliases': ('FETCH_MEDIA',)},
-        'SAVE_ARCHIVE_DOT_ORG':     {'type': bool,  'default': True, 'aliases': ('SUBMIT_ARCHIVE_DOT_ORG',)},
+        'SAVE_TITLE': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_TITLE',),
+        },
+        'SAVE_FAVICON': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_FAVICON',),
+        },
+        'SAVE_WGET': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_WGET',),
+        },
+        'SAVE_WGET_REQUISITES': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_WGET_REQUISITES',),
+        },
+        'SAVE_SINGLEFILE': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_SINGLEFILE',),
+        },
+        'SAVE_READABILITY': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_READABILITY',),
+        },
+        'SAVE_MERCURY': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_MERCURY',),
+        },
+        'SAVE_PDF': {'type': bool, 'default': True, 'aliases': ('FETCH_PDF',)},
+        'SAVE_SCREENSHOT': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_SCREENSHOT',),
+        },
+        'SAVE_DOM': {'type': bool, 'default': True, 'aliases': ('FETCH_DOM',)},
+        'SAVE_HEADERS': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_HEADERS',),
+        },
+        'SAVE_WARC': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_WARC',),
+        },
+        'SAVE_GIT': {'type': bool, 'default': True, 'aliases': ('FETCH_GIT',)},
+        'SAVE_MEDIA': {
+            'type': bool,
+            'default': True,
+            'aliases': ('FETCH_MEDIA',),
+        },
+        'SAVE_ARCHIVE_DOT_ORG': {
+            'type': bool,
+            'default': True,
+            'aliases': ('SUBMIT_ARCHIVE_DOT_ORG',),
+        },
     },
-
     'ARCHIVE_METHOD_OPTIONS': {
-        'RESOLUTION':               {'type': str,   'default': '1440,2000', 'aliases': ('SCREENSHOT_RESOLUTION',)},
-        'GIT_DOMAINS':              {'type': str,   'default': 'github.com,bitbucket.org,gitlab.com,gist.github.com'},
-        'CHECK_SSL_VALIDITY':       {'type': bool,  'default': True},
-        'MEDIA_MAX_SIZE':           {'type': str,   'default': '750m'},
-
-        'CURL_USER_AGENT':          {'type': str,   'default': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.61 Safari/537.36 ArchiveBox/{VERSION} (+https://github.com/ArchiveBox/ArchiveBox/) curl/{CURL_VERSION}'},
-        'WGET_USER_AGENT':          {'type': str,   'default': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.61 Safari/537.36 ArchiveBox/{VERSION} (+https://github.com/ArchiveBox/ArchiveBox/) wget/{WGET_VERSION}'},
-        'CHROME_USER_AGENT':        {'type': str,   'default': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.61 Safari/537.36 ArchiveBox/{VERSION} (+https://github.com/ArchiveBox/ArchiveBox/)'},
-
-        'COOKIES_FILE':             {'type': str,   'default': None},
-        'CHROME_USER_DATA_DIR':     {'type': str,   'default': None},
-
-        'CHROME_HEADLESS':          {'type': bool,  'default': True},
-        'CHROME_SANDBOX':           {'type': bool,  'default': lambda c: not c['IN_DOCKER']},
-        'YOUTUBEDL_ARGS':           {'type': list,  'default': lambda c: [
-                                                                '--write-description',
-                                                                '--write-info-json',
-                                                                '--write-annotations',
-                                                                '--write-thumbnail',
-                                                                '--no-call-home',
-                                                                '--write-sub',
-                                                                '--all-subs',
-                                                                '--write-auto-sub',
-                                                                '--convert-subs=srt',
-                                                                '--yes-playlist',
-                                                                '--continue',
-                                                                '--ignore-errors',
-                                                                '--geo-bypass',
-                                                                '--add-metadata',
-                                                                '--max-filesize={}'.format(c['MEDIA_MAX_SIZE']),
-                                                                ]},
-                                                                    
-
-        'WGET_ARGS':                {'type': list,  'default': ['--no-verbose',
-                                                                '--adjust-extension',
-                                                                '--convert-links',
-                                                                '--force-directories',
-                                                                '--backup-converted',
-                                                                '--span-hosts',
-                                                                '--no-parent',
-                                                                '-e', 'robots=off',
-                                                                ]},
-        'CURL_ARGS':                {'type': list,  'default': ['--silent',
-                                                                '--location',
-                                                                '--compressed'
-                                                               ]},
-        'GIT_ARGS':                 {'type': list,  'default': ['--recursive']},
+        'RESOLUTION': {
+            'type': str,
+            'default': '1440,2000',
+            'aliases': ('SCREENSHOT_RESOLUTION',),
+        },
+        'GIT_DOMAINS': {
+            'type': str,
+            'default': 'github.com,bitbucket.org,gitlab.com,gist.github.com',
+        },
+        'CHECK_SSL_VALIDITY': {'type': bool, 'default': True},
+        'MEDIA_MAX_SIZE': {'type': str, 'default': '750m'},
+        'CURL_USER_AGENT': {
+            'type': str,
+            'default': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.61 Safari/537.36 ArchiveBox/{VERSION} (+https://github.com/ArchiveBox/ArchiveBox/) curl/{CURL_VERSION}',
+        },
+        'WGET_USER_AGENT': {
+            'type': str,
+            'default': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.61 Safari/537.36 ArchiveBox/{VERSION} (+https://github.com/ArchiveBox/ArchiveBox/) wget/{WGET_VERSION}',
+        },
+        'CHROME_USER_AGENT': {
+            'type': str,
+            'default': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.61 Safari/537.36 ArchiveBox/{VERSION} (+https://github.com/ArchiveBox/ArchiveBox/)',
+        },
+        'COOKIES_FILE': {'type': str, 'default': None},
+        'CHROME_USER_DATA_DIR': {'type': str, 'default': None},
+        'CHROME_HEADLESS': {'type': bool, 'default': True},
+        'CHROME_SANDBOX': {
+            'type': bool,
+            'default': lambda c: not c['IN_DOCKER'],
+        },
+        'YOUTUBEDL_ARGS': {
+            'type': list,
+            'default': lambda c: [
+                '--write-description',
+                '--write-info-json',
+                '--write-annotations',
+                '--write-thumbnail',
+                '--no-call-home',
+                '--write-sub',
+                '--all-subs',
+                '--write-auto-sub',
+                '--convert-subs=srt',
+                '--yes-playlist',
+                '--continue',
+                '--ignore-errors',
+                '--geo-bypass',
+                '--add-metadata',
+                f"--max-filesize={c['MEDIA_MAX_SIZE']}",
+            ],
+        },
+        'WGET_ARGS': {
+            'type': list,
+            'default': [
+                '--no-verbose',
+                '--adjust-extension',
+                '--convert-links',
+                '--force-directories',
+                '--backup-converted',
+                '--span-hosts',
+                '--no-parent',
+                '-e',
+                'robots=off',
+            ],
+        },
+        'CURL_ARGS': {
+            'type': list,
+            'default': ['--silent', '--location', '--compressed'],
+        },
+        'GIT_ARGS': {'type': list, 'default': ['--recursive']},
     },
-
-    'SEARCH_BACKEND_CONFIG' : {
-        'USE_INDEXING_BACKEND':     {'type': bool,  'default': True},
-        'USE_SEARCHING_BACKEND':    {'type': bool,  'default': True},
-        'SEARCH_BACKEND_ENGINE':    {'type': str,   'default': 'ripgrep'},
-        'SEARCH_BACKEND_HOST_NAME': {'type': str,   'default': 'localhost'},
-        'SEARCH_BACKEND_PORT':      {'type': int,   'default': 1491},
-        'SEARCH_BACKEND_PASSWORD':  {'type': str,   'default': 'SecretPassword'},
+    'SEARCH_BACKEND_CONFIG': {
+        'USE_INDEXING_BACKEND': {'type': bool, 'default': True},
+        'USE_SEARCHING_BACKEND': {'type': bool, 'default': True},
+        'SEARCH_BACKEND_ENGINE': {'type': str, 'default': 'ripgrep'},
+        'SEARCH_BACKEND_HOST_NAME': {'type': str, 'default': 'localhost'},
+        'SEARCH_BACKEND_PORT': {'type': int, 'default': 1491},
+        'SEARCH_BACKEND_PASSWORD': {'type': str, 'default': 'SecretPassword'},
         # SONIC
-        'SONIC_COLLECTION':         {'type': str,   'default': 'archivebox'},
-        'SONIC_BUCKET':             {'type': str,   'default': 'snapshots'},
-        'SEARCH_BACKEND_TIMEOUT':   {'type': int,   'default': 90},
+        'SONIC_COLLECTION': {'type': str, 'default': 'archivebox'},
+        'SONIC_BUCKET': {'type': str, 'default': 'snapshots'},
+        'SEARCH_BACKEND_TIMEOUT': {'type': int, 'default': 90},
     },
-
     'DEPENDENCY_CONFIG': {
-        'USE_CURL':                 {'type': bool,  'default': True},
-        'USE_WGET':                 {'type': bool,  'default': True},
-        'USE_SINGLEFILE':           {'type': bool,  'default': True},
-        'USE_READABILITY':          {'type': bool,  'default': True},
-        'USE_MERCURY':              {'type': bool,  'default': True},
-        'USE_GIT':                  {'type': bool,  'default': True},
-        'USE_CHROME':               {'type': bool,  'default': True},
-        'USE_NODE':                 {'type': bool,  'default': True},
-        'USE_YOUTUBEDL':            {'type': bool,  'default': True},
-        'USE_RIPGREP':              {'type': bool,  'default': True},
-        
-        'CURL_BINARY':              {'type': str,   'default': 'curl'},
-        'GIT_BINARY':               {'type': str,   'default': 'git'},
-        'WGET_BINARY':              {'type': str,   'default': 'wget'},
-        'SINGLEFILE_BINARY':        {'type': str,   'default': lambda c: bin_path('single-file')},
-        'READABILITY_BINARY':       {'type': str,   'default': lambda c: bin_path('readability-extractor')},
-        'MERCURY_BINARY':           {'type': str,   'default': lambda c: bin_path('mercury-parser')},
-        'YOUTUBEDL_BINARY':         {'type': str,   'default': 'youtube-dl'},
-        'NODE_BINARY':              {'type': str,   'default': 'node'},
-        'RIPGREP_BINARY':           {'type': str,   'default': 'rg'},
-        'CHROME_BINARY':            {'type': str,   'default': None},
-
-        'POCKET_CONSUMER_KEY':      {'type': str,   'default': None},
-        'POCKET_ACCESS_TOKENS':     {'type': dict,  'default': {}},
+        'USE_CURL': {'type': bool, 'default': True},
+        'USE_WGET': {'type': bool, 'default': True},
+        'USE_SINGLEFILE': {'type': bool, 'default': True},
+        'USE_READABILITY': {'type': bool, 'default': True},
+        'USE_MERCURY': {'type': bool, 'default': True},
+        'USE_GIT': {'type': bool, 'default': True},
+        'USE_CHROME': {'type': bool, 'default': True},
+        'USE_NODE': {'type': bool, 'default': True},
+        'USE_YOUTUBEDL': {'type': bool, 'default': True},
+        'USE_RIPGREP': {'type': bool, 'default': True},
+        'CURL_BINARY': {'type': str, 'default': 'curl'},
+        'GIT_BINARY': {'type': str, 'default': 'git'},
+        'WGET_BINARY': {'type': str, 'default': 'wget'},
+        'SINGLEFILE_BINARY': {
+            'type': str,
+            'default': lambda c: bin_path('single-file'),
+        },
+        'READABILITY_BINARY': {
+            'type': str,
+            'default': lambda c: bin_path('readability-extractor'),
+        },
+        'MERCURY_BINARY': {
+            'type': str,
+            'default': lambda c: bin_path('mercury-parser'),
+        },
+        'YOUTUBEDL_BINARY': {'type': str, 'default': 'youtube-dl'},
+        'NODE_BINARY': {'type': str, 'default': 'node'},
+        'RIPGREP_BINARY': {'type': str, 'default': 'rg'},
+        'CHROME_BINARY': {'type': str, 'default': None},
+        'POCKET_CONSUMER_KEY': {'type': str, 'default': None},
+        'POCKET_ACCESS_TOKENS': {'type': dict, 'default': {}},
     },
 }
 
@@ -249,7 +337,7 @@ DEFAULT_CLI_COLORS = {
     'white': '\033[01;37m',
     'black': '\033[01;30m',
 }
-ANSI = {k: '' for k in DEFAULT_CLI_COLORS.keys()}
+ANSI = {k: '' for k in DEFAULT_CLI_COLORS}
 
 COLOR_DICT = defaultdict(lambda: [(0, 0, 0), (0, 0, 0)], {
     '00': [(0, 0, 0), (0, 0, 0)],
@@ -322,89 +410,220 @@ ALLOWED_IN_OUTPUT_DIR = {
 
 
 DYNAMIC_CONFIG_SCHEMA: ConfigDefaultDict = {
-    'TERM_WIDTH':               {'default': lambda c: lambda: shutil.get_terminal_size((100, 10)).columns},
-    'USER':                     {'default': lambda c: SYSTEM_USER},
-    'ANSI':                     {'default': lambda c: DEFAULT_CLI_COLORS if c['USE_COLOR'] else {k: '' for k in DEFAULT_CLI_COLORS.keys()}},
-
-    'PACKAGE_DIR':              {'default': lambda c: Path(__file__).resolve().parent},
-    'TEMPLATES_DIR':            {'default': lambda c: c['PACKAGE_DIR'] / TEMPLATES_DIR_NAME},
-    'CUSTOM_TEMPLATES_DIR':     {'default': lambda c: c['CUSTOM_TEMPLATES_DIR'] and Path(c['CUSTOM_TEMPLATES_DIR'])},
-
-    'OUTPUT_DIR':               {'default': lambda c: Path(c['OUTPUT_DIR']).resolve() if c['OUTPUT_DIR'] else Path(os.curdir).resolve()},
-    'ARCHIVE_DIR':              {'default': lambda c: c['OUTPUT_DIR'] / ARCHIVE_DIR_NAME},
-    'SOURCES_DIR':              {'default': lambda c: c['OUTPUT_DIR'] / SOURCES_DIR_NAME},
-    'LOGS_DIR':                 {'default': lambda c: c['OUTPUT_DIR'] / LOGS_DIR_NAME},
-    'CONFIG_FILE':              {'default': lambda c: Path(c['CONFIG_FILE']).resolve() if c['CONFIG_FILE'] else c['OUTPUT_DIR'] / CONFIG_FILENAME},
-    'COOKIES_FILE':             {'default': lambda c: c['COOKIES_FILE'] and Path(c['COOKIES_FILE']).resolve()},
-    'CHROME_USER_DATA_DIR':     {'default': lambda c: find_chrome_data_dir() if c['CHROME_USER_DATA_DIR'] is None else (Path(c['CHROME_USER_DATA_DIR']).resolve() if c['CHROME_USER_DATA_DIR'] else None)},   # None means unset, so we autodetect it with find_chrome_Data_dir(), but emptystring '' means user manually set it to '', and we should store it as None
-    'URL_BLACKLIST_PTN':        {'default': lambda c: c['URL_BLACKLIST'] and re.compile(c['URL_BLACKLIST'] or '', re.IGNORECASE | re.UNICODE | re.MULTILINE)},
-    'URL_WHITELIST_PTN':        {'default': lambda c: c['URL_WHITELIST'] and re.compile(c['URL_WHITELIST'] or '', re.IGNORECASE | re.UNICODE | re.MULTILINE)},
-    'DIR_OUTPUT_PERMISSIONS':   {'default': lambda c: c['OUTPUT_PERMISSIONS'].replace('6', '7').replace('4', '5')},
-
-    'ARCHIVEBOX_BINARY':        {'default': lambda c: sys.argv[0] or bin_path('archivebox')},
-    'VERSION':                  {'default': lambda c: json.loads((Path(c['PACKAGE_DIR']) / 'package.json').read_text(encoding='utf-8').strip())['version']},
-
-    'PYTHON_BINARY':            {'default': lambda c: sys.executable},
-    'PYTHON_ENCODING':          {'default': lambda c: sys.stdout.encoding.upper()},
-    'PYTHON_VERSION':           {'default': lambda c: '{}.{}.{}'.format(*sys.version_info[:3])},
-
-    'DJANGO_BINARY':            {'default': lambda c: django.__file__.replace('__init__.py', 'bin/django-admin.py')},
-    'DJANGO_VERSION':           {'default': lambda c: '{}.{}.{} {} ({})'.format(*django.VERSION)},
-
-    'USE_CURL':                 {'default': lambda c: c['USE_CURL'] and (c['SAVE_FAVICON'] or c['SAVE_TITLE'] or c['SAVE_ARCHIVE_DOT_ORG'])},
-    'CURL_VERSION':             {'default': lambda c: bin_version(c['CURL_BINARY']) if c['USE_CURL'] else None},
-    'CURL_USER_AGENT':          {'default': lambda c: c['CURL_USER_AGENT'].format(**c)},
-    'CURL_ARGS':                {'default': lambda c: c['CURL_ARGS'] or []},
-    'SAVE_FAVICON':             {'default': lambda c: c['USE_CURL'] and c['SAVE_FAVICON']},
-    'SAVE_ARCHIVE_DOT_ORG':     {'default': lambda c: c['USE_CURL'] and c['SAVE_ARCHIVE_DOT_ORG']},
-
-    'USE_WGET':                 {'default': lambda c: c['USE_WGET'] and (c['SAVE_WGET'] or c['SAVE_WARC'])},
-    'WGET_VERSION':             {'default': lambda c: bin_version(c['WGET_BINARY']) if c['USE_WGET'] else None},
-    'WGET_AUTO_COMPRESSION':    {'default': lambda c: wget_supports_compression(c) if c['USE_WGET'] else False},
-    'WGET_USER_AGENT':          {'default': lambda c: c['WGET_USER_AGENT'].format(**c)},
-    'SAVE_WGET':                {'default': lambda c: c['USE_WGET'] and c['SAVE_WGET']},
-    'SAVE_WARC':                {'default': lambda c: c['USE_WGET'] and c['SAVE_WARC']},
-    'WGET_ARGS':                {'default': lambda c: c['WGET_ARGS'] or []},
-
-    'RIPGREP_VERSION':          {'default': lambda c: bin_version(c['RIPGREP_BINARY']) if c['USE_RIPGREP'] else None},
-
-    'USE_SINGLEFILE':           {'default': lambda c: c['USE_SINGLEFILE'] and c['SAVE_SINGLEFILE']},
-    'SINGLEFILE_VERSION':       {'default': lambda c: bin_version(c['SINGLEFILE_BINARY']) if c['USE_SINGLEFILE'] else None},
-
-    'USE_READABILITY':          {'default': lambda c: c['USE_READABILITY'] and c['SAVE_READABILITY']},
-    'READABILITY_VERSION':      {'default': lambda c: bin_version(c['READABILITY_BINARY']) if c['USE_READABILITY'] else None},
-
-    'USE_MERCURY':              {'default': lambda c: c['USE_MERCURY'] and c['SAVE_MERCURY']},
-    'MERCURY_VERSION':          {'default': lambda c: '1.0.0' if shutil.which(str(bin_path(c['MERCURY_BINARY']))) else None},  # mercury is unversioned
-
-    'USE_GIT':                  {'default': lambda c: c['USE_GIT'] and c['SAVE_GIT']},
-    'GIT_VERSION':              {'default': lambda c: bin_version(c['GIT_BINARY']) if c['USE_GIT'] else None},
-    'SAVE_GIT':                 {'default': lambda c: c['USE_GIT'] and c['SAVE_GIT']},
-
-    'USE_YOUTUBEDL':            {'default': lambda c: c['USE_YOUTUBEDL'] and c['SAVE_MEDIA']},
-    'YOUTUBEDL_VERSION':        {'default': lambda c: bin_version(c['YOUTUBEDL_BINARY']) if c['USE_YOUTUBEDL'] else None},
-    'SAVE_MEDIA':               {'default': lambda c: c['USE_YOUTUBEDL'] and c['SAVE_MEDIA']},
-    'YOUTUBEDL_ARGS':           {'default': lambda c: c['YOUTUBEDL_ARGS'] or []},
-
-    'CHROME_BINARY':            {'default': lambda c: c['CHROME_BINARY'] or find_chrome_binary()},
-    'USE_CHROME':               {'default': lambda c: c['USE_CHROME'] and c['CHROME_BINARY'] and (c['SAVE_PDF'] or c['SAVE_SCREENSHOT'] or c['SAVE_DOM'] or c['SAVE_SINGLEFILE'])},
-    'CHROME_VERSION':           {'default': lambda c: bin_version(c['CHROME_BINARY']) if c['USE_CHROME'] else None},
-    
-    'SAVE_PDF':                 {'default': lambda c: c['USE_CHROME'] and c['SAVE_PDF']},
-    'SAVE_SCREENSHOT':          {'default': lambda c: c['USE_CHROME'] and c['SAVE_SCREENSHOT']},
-    'SAVE_DOM':                 {'default': lambda c: c['USE_CHROME'] and c['SAVE_DOM']},
-    'SAVE_SINGLEFILE':          {'default': lambda c: c['USE_CHROME'] and c['SAVE_SINGLEFILE'] and c['USE_NODE']},
-    'SAVE_READABILITY':         {'default': lambda c: c['USE_READABILITY'] and c['USE_NODE']},
-    'SAVE_MERCURY':             {'default': lambda c: c['USE_MERCURY'] and c['USE_NODE']},
-    
-    'USE_NODE':                 {'default': lambda c: c['USE_NODE'] and (c['SAVE_READABILITY'] or c['SAVE_SINGLEFILE'] or c['SAVE_MERCURY'])},
-    'NODE_VERSION':             {'default': lambda c: bin_version(c['NODE_BINARY']) if c['USE_NODE'] else None},
-
-    'DEPENDENCIES':             {'default': lambda c: get_dependency_info(c)},
-    'CODE_LOCATIONS':           {'default': lambda c: get_code_locations(c)},
-    'EXTERNAL_LOCATIONS':       {'default': lambda c: get_external_locations(c)},
-    'DATA_LOCATIONS':           {'default': lambda c: get_data_locations(c)},
-    'CHROME_OPTIONS':           {'default': lambda c: get_chrome_info(c)},
+    'TERM_WIDTH': {
+        'default': lambda c: lambda: shutil.get_terminal_size(
+            (100, 10)
+        ).columns
+    },
+    'USER': {'default': lambda c: SYSTEM_USER},
+    'ANSI': {
+        'default': lambda c: DEFAULT_CLI_COLORS
+        if c['USE_COLOR']
+        else {k: '' for k in DEFAULT_CLI_COLORS}
+    },
+    'PACKAGE_DIR': {'default': lambda c: Path(__file__).resolve().parent},
+    'TEMPLATES_DIR': {
+        'default': lambda c: c['PACKAGE_DIR'] / TEMPLATES_DIR_NAME
+    },
+    'CUSTOM_TEMPLATES_DIR': {
+        'default': lambda c: c['CUSTOM_TEMPLATES_DIR']
+        and Path(c['CUSTOM_TEMPLATES_DIR'])
+    },
+    'OUTPUT_DIR': {
+        'default': lambda c: Path(c['OUTPUT_DIR']).resolve()
+        if c['OUTPUT_DIR']
+        else Path(os.curdir).resolve()
+    },
+    'ARCHIVE_DIR': {'default': lambda c: c['OUTPUT_DIR'] / ARCHIVE_DIR_NAME},
+    'SOURCES_DIR': {'default': lambda c: c['OUTPUT_DIR'] / SOURCES_DIR_NAME},
+    'LOGS_DIR': {'default': lambda c: c['OUTPUT_DIR'] / LOGS_DIR_NAME},
+    'CONFIG_FILE': {
+        'default': lambda c: Path(c['CONFIG_FILE']).resolve()
+        if c['CONFIG_FILE']
+        else c['OUTPUT_DIR'] / CONFIG_FILENAME
+    },
+    'COOKIES_FILE': {
+        'default': lambda c: c['COOKIES_FILE']
+        and Path(c['COOKIES_FILE']).resolve()
+    },
+    'CHROME_USER_DATA_DIR': {
+        'default': lambda c: find_chrome_data_dir()
+        if c['CHROME_USER_DATA_DIR'] is None
+        else (
+            Path(c['CHROME_USER_DATA_DIR']).resolve()
+            if c['CHROME_USER_DATA_DIR']
+            else None
+        )
+    },
+    'URL_BLACKLIST_PTN': {
+        'default': lambda c: c['URL_BLACKLIST']
+        and re.compile(
+            c['URL_BLACKLIST'] or '', re.IGNORECASE | re.UNICODE | re.MULTILINE
+        )
+    },
+    'URL_WHITELIST_PTN': {
+        'default': lambda c: c['URL_WHITELIST']
+        and re.compile(
+            c['URL_WHITELIST'] or '', re.IGNORECASE | re.UNICODE | re.MULTILINE
+        )
+    },
+    'DIR_OUTPUT_PERMISSIONS': {
+        'default': lambda c: c['OUTPUT_PERMISSIONS']
+        .replace('6', '7')
+        .replace('4', '5')
+    },
+    'ARCHIVEBOX_BINARY': {
+        'default': lambda c: sys.argv[0] or bin_path('archivebox')
+    },
+    'VERSION': {
+        'default': lambda c: json.loads(
+            (Path(c['PACKAGE_DIR']) / 'package.json')
+            .read_text(encoding='utf-8')
+            .strip()
+        )['version']
+    },
+    'PYTHON_BINARY': {'default': lambda c: sys.executable},
+    'PYTHON_ENCODING': {'default': lambda c: sys.stdout.encoding.upper()},
+    'PYTHON_VERSION': {
+        'default': lambda c: '{}.{}.{}'.format(*sys.version_info[:3])
+    },
+    'DJANGO_BINARY': {
+        'default': lambda c: django.__file__.replace(
+            '__init__.py', 'bin/django-admin.py'
+        )
+    },
+    'DJANGO_VERSION': {
+        'default': lambda c: '{}.{}.{} {} ({})'.format(*django.VERSION)
+    },
+    'USE_CURL': {
+        'default': lambda c: c['USE_CURL']
+        and (c['SAVE_FAVICON'] or c['SAVE_TITLE'] or c['SAVE_ARCHIVE_DOT_ORG'])
+    },
+    'CURL_VERSION': {
+        'default': lambda c: bin_version(c['CURL_BINARY'])
+        if c['USE_CURL']
+        else None
+    },
+    'CURL_USER_AGENT': {'default': lambda c: c['CURL_USER_AGENT'].format(**c)},
+    'CURL_ARGS': {'default': lambda c: c['CURL_ARGS'] or []},
+    'SAVE_FAVICON': {'default': lambda c: c['USE_CURL'] and c['SAVE_FAVICON']},
+    'SAVE_ARCHIVE_DOT_ORG': {
+        'default': lambda c: c['USE_CURL'] and c['SAVE_ARCHIVE_DOT_ORG']
+    },
+    'USE_WGET': {
+        'default': lambda c: c['USE_WGET']
+        and (c['SAVE_WGET'] or c['SAVE_WARC'])
+    },
+    'WGET_VERSION': {
+        'default': lambda c: bin_version(c['WGET_BINARY'])
+        if c['USE_WGET']
+        else None
+    },
+    'WGET_AUTO_COMPRESSION': {
+        'default': lambda c: wget_supports_compression(c)
+        if c['USE_WGET']
+        else False
+    },
+    'WGET_USER_AGENT': {'default': lambda c: c['WGET_USER_AGENT'].format(**c)},
+    'SAVE_WGET': {'default': lambda c: c['USE_WGET'] and c['SAVE_WGET']},
+    'SAVE_WARC': {'default': lambda c: c['USE_WGET'] and c['SAVE_WARC']},
+    'WGET_ARGS': {'default': lambda c: c['WGET_ARGS'] or []},
+    'RIPGREP_VERSION': {
+        'default': lambda c: bin_version(c['RIPGREP_BINARY'])
+        if c['USE_RIPGREP']
+        else None
+    },
+    'USE_SINGLEFILE': {
+        'default': lambda c: c['USE_SINGLEFILE'] and c['SAVE_SINGLEFILE']
+    },
+    'SINGLEFILE_VERSION': {
+        'default': lambda c: bin_version(c['SINGLEFILE_BINARY'])
+        if c['USE_SINGLEFILE']
+        else None
+    },
+    'USE_READABILITY': {
+        'default': lambda c: c['USE_READABILITY'] and c['SAVE_READABILITY']
+    },
+    'READABILITY_VERSION': {
+        'default': lambda c: bin_version(c['READABILITY_BINARY'])
+        if c['USE_READABILITY']
+        else None
+    },
+    'USE_MERCURY': {
+        'default': lambda c: c['USE_MERCURY'] and c['SAVE_MERCURY']
+    },
+    'MERCURY_VERSION': {
+        'default': lambda c: '1.0.0'
+        if shutil.which(str(bin_path(c['MERCURY_BINARY'])))
+        else None
+    },
+    'USE_GIT': {'default': lambda c: c['USE_GIT'] and c['SAVE_GIT']},
+    'GIT_VERSION': {
+        'default': lambda c: bin_version(c['GIT_BINARY'])
+        if c['USE_GIT']
+        else None
+    },
+    'SAVE_GIT': {'default': lambda c: c['USE_GIT'] and c['SAVE_GIT']},
+    'USE_YOUTUBEDL': {
+        'default': lambda c: c['USE_YOUTUBEDL'] and c['SAVE_MEDIA']
+    },
+    'YOUTUBEDL_VERSION': {
+        'default': lambda c: bin_version(c['YOUTUBEDL_BINARY'])
+        if c['USE_YOUTUBEDL']
+        else None
+    },
+    'SAVE_MEDIA': {
+        'default': lambda c: c['USE_YOUTUBEDL'] and c['SAVE_MEDIA']
+    },
+    'YOUTUBEDL_ARGS': {'default': lambda c: c['YOUTUBEDL_ARGS'] or []},
+    'CHROME_BINARY': {
+        'default': lambda c: c['CHROME_BINARY'] or find_chrome_binary()
+    },
+    'USE_CHROME': {
+        'default': lambda c: c['USE_CHROME']
+        and c['CHROME_BINARY']
+        and (
+            c['SAVE_PDF']
+            or c['SAVE_SCREENSHOT']
+            or c['SAVE_DOM']
+            or c['SAVE_SINGLEFILE']
+        )
+    },
+    'CHROME_VERSION': {
+        'default': lambda c: bin_version(c['CHROME_BINARY'])
+        if c['USE_CHROME']
+        else None
+    },
+    'SAVE_PDF': {'default': lambda c: c['USE_CHROME'] and c['SAVE_PDF']},
+    'SAVE_SCREENSHOT': {
+        'default': lambda c: c['USE_CHROME'] and c['SAVE_SCREENSHOT']
+    },
+    'SAVE_DOM': {'default': lambda c: c['USE_CHROME'] and c['SAVE_DOM']},
+    'SAVE_SINGLEFILE': {
+        'default': lambda c: c['USE_CHROME']
+        and c['SAVE_SINGLEFILE']
+        and c['USE_NODE']
+    },
+    'SAVE_READABILITY': {
+        'default': lambda c: c['USE_READABILITY'] and c['USE_NODE']
+    },
+    'SAVE_MERCURY': {'default': lambda c: c['USE_MERCURY'] and c['USE_NODE']},
+    'USE_NODE': {
+        'default': lambda c: c['USE_NODE']
+        and (
+            c['SAVE_READABILITY'] or c['SAVE_SINGLEFILE'] or c['SAVE_MERCURY']
+        )
+    },
+    'NODE_VERSION': {
+        'default': lambda c: bin_version(c['NODE_BINARY'])
+        if c['USE_NODE']
+        else None
+    },
+    'DEPENDENCIES': {'default': lambda c: get_dependency_info(c)},
+    'CODE_LOCATIONS': {'default': lambda c: get_code_locations(c)},
+    'EXTERNAL_LOCATIONS': {'default': lambda c: get_external_locations(c)},
+    'DATA_LOCATIONS': {'default': lambda c: get_data_locations(c)},
+    'CHROME_OPTIONS': {'default': lambda c: get_chrome_info(c)},
 }
 
 
@@ -471,17 +690,13 @@ def load_config_file(out_dir: str=None) -> Optional[Dict[str, str]]:
     config_path = Path(out_dir) / CONFIG_FILENAME
     if config_path.exists():
         config_file = ConfigParser()
-        config_file.optionxform = str 
+        config_file.optionxform = str
         config_file.read(config_path)
-        # flatten into one namespace
-        config_file_vars = {
+        return {
             key.upper(): val
             for section, options in config_file.items()
-                for key, val in options.items()
+            for key, val in options.items()
         }
-        # print('[i] Loaded config file', os.path.abspath(config_path))
-        # print(config_file_vars)
-        return config_file_vars
     return None
 
 
@@ -490,8 +705,12 @@ def write_config_file(config: Dict[str, str], out_dir: str=None) -> ConfigDict:
 
     from .system import atomic_write
 
-    CONFIG_HEADER = (
-    """# This is the config file for your ArchiveBox collection.
+    out_dir = out_dir or Path(os.getenv('OUTPUT_DIR', '.')).resolve()
+    config_path = Path(out_dir) /  CONFIG_FILENAME
+
+    if not config_path.exists():
+        CONFIG_HEADER = (
+        """# This is the config file for your ArchiveBox collection.
     #
     # You can add options here manually in INI format, or automatically by running:
     #    archivebox config --set KEY=VALUE
@@ -504,10 +723,6 @@ def write_config_file(config: Dict[str, str], out_dir: str=None) -> ConfigDict:
 
     """)
 
-    out_dir = out_dir or Path(os.getenv('OUTPUT_DIR', '.')).resolve()
-    config_path = Path(out_dir) /  CONFIG_FILENAME
-    
-    if not config_path.exists():
         atomic_write(config_path, CONFIG_HEADER)
 
     config_file = ConfigParser()
@@ -522,10 +737,7 @@ def write_config_file(config: Dict[str, str], out_dir: str=None) -> ConfigDict:
     # Set up sections in empty config file
     for key, val in config.items():
         section = find_section(key)
-        if section in config_file:
-            existing_config = dict(config_file[section])
-        else:
-            existing_config = {}
+        existing_config = dict(config_file[section]) if section in config_file else {}
         config_file[section] = {**existing_config, key: val}
 
     # always make sure there's a SECRET_KEY defined for Django
@@ -544,7 +756,7 @@ def write_config_file(config: Dict[str, str], out_dir: str=None) -> ConfigDict:
 
     with open(config_path, 'w+', encoding='utf-8') as new:
         config_file.write(new)
-    
+
     try:
         # validate the config by attempting to re-parse it
         CONFIG = load_all_config()
@@ -557,11 +769,8 @@ def write_config_file(config: Dict[str, str], out_dir: str=None) -> ConfigDict:
 
     if Path(f'{config_path}.bak').exists():
         os.remove(f'{config_path}.bak')
-    
-    return {
-        key.upper(): CONFIG.get(key.upper())
-        for key in config.keys()
-    }
+
+    return {key.upper(): CONFIG.get(key.upper()) for key in config}
 
    
 
@@ -591,7 +800,7 @@ def load_config(defaults: ConfigDefaultDict,
         except Exception as e:
             stderr()
             stderr(f'[X] Error while loading configuration value: {key}', color='red', config=extended_config)
-            stderr('    {}: {}'.format(e.__class__.__name__, e))
+            stderr(f'    {e.__class__.__name__}: {e}')
             stderr()
             stderr('    Check your config for mistakes and try again (your archive data is unaffected).')
             stderr()
@@ -600,7 +809,7 @@ def load_config(defaults: ConfigDefaultDict,
             stderr()
             # raise
             raise SystemExit(2)
-    
+
     return extended_config
 
 # def write_config(config: ConfigDict):
@@ -637,7 +846,7 @@ def hint(text: Union[Tuple[str, ...], List[str], str], prefix='    ', config: Op
     else:
         stderr('{}{lightred}Hint:{reset} {}'.format(prefix, text[0], **ansi))
         for line in text[1:]:
-            stderr('{}      {}'.format(prefix, line))
+            stderr(f'{prefix}      {line}')
 
 
 # Dependency Metadata Helpers
@@ -705,10 +914,9 @@ def find_chrome_binary() -> Optional[str]:
         'google-chrome-dev',
     )
     for name in default_executable_paths:
-        full_path_exists = shutil.which(name)
-        if full_path_exists:
+        if full_path_exists := shutil.which(name):
             return name
-    
+
     return None
 
 def find_chrome_data_dir() -> Optional[str]:
@@ -744,7 +952,7 @@ def wget_supports_compression(config):
             "--help",
         ]
         return not run(cmd, stdout=DEVNULL, stderr=DEVNULL).returncode
-    except (FileNotFoundError, OSError):
+    except OSError:
         return False
 
 def get_code_locations(config: ConfigDict) -> SimpleConfigValueDict:
@@ -1017,18 +1225,22 @@ def check_system_config(config: ConfigDict=CONFIG) -> None:
 
     # stderr('[i] Using Chrome binary: {}'.format(shutil.which(CHROME_BINARY) or CHROME_BINARY))
     # stderr('[i] Using Chrome data dir: {}'.format(os.path.abspath(CHROME_USER_DATA_DIR)))
-    if config['CHROME_USER_DATA_DIR'] is not None:
-        if not (Path(config['CHROME_USER_DATA_DIR']) / 'Default').exists():
-            stderr('[X] Could not find profile "Default" in CHROME_USER_DATA_DIR.', color='red')
-            stderr(f'    {config["CHROME_USER_DATA_DIR"]}')
-            stderr('    Make sure you set it to a Chrome user data directory containing a Default profile folder.')
-            stderr('    For more info see:')
-            stderr('        https://github.com/ArchiveBox/ArchiveBox/wiki/Configuration#CHROME_USER_DATA_DIR')
-            if '/Default' in str(config['CHROME_USER_DATA_DIR']):
-                stderr()
-                stderr('    Try removing /Default from the end e.g.:')
-                stderr('        CHROME_USER_DATA_DIR="{}"'.format(config['CHROME_USER_DATA_DIR'].split('/Default')[0]))
-            raise SystemExit(2)
+    if (
+        config['CHROME_USER_DATA_DIR'] is not None
+        and not (Path(config['CHROME_USER_DATA_DIR']) / 'Default').exists()
+    ):
+        stderr('[X] Could not find profile "Default" in CHROME_USER_DATA_DIR.', color='red')
+        stderr(f'    {config["CHROME_USER_DATA_DIR"]}')
+        stderr('    Make sure you set it to a Chrome user data directory containing a Default profile folder.')
+        stderr('    For more info see:')
+        stderr('        https://github.com/ArchiveBox/ArchiveBox/wiki/Configuration#CHROME_USER_DATA_DIR')
+        if '/Default' in str(config['CHROME_USER_DATA_DIR']):
+            stderr()
+            stderr('    Try removing /Default from the end e.g.:')
+            stderr(
+                f"""        CHROME_USER_DATA_DIR="{config['CHROME_USER_DATA_DIR'].split('/Default')[0]}\""""
+            )
+        raise SystemExit(2)
 
 
 def check_dependencies(config: ConfigDict=CONFIG, show_help: bool=True) -> None:
@@ -1040,11 +1252,7 @@ def check_dependencies(config: ConfigDict=CONFIG, show_help: bool=True) -> None:
         stderr(f'[!] Warning: Missing {len(invalid_dependencies)} recommended dependencies', color='lightyellow')
         for dependency, info in invalid_dependencies:
             stderr(
-                '    ! {}: {} ({})'.format(
-                    dependency,
-                    info['path'] or 'unable to find binary',
-                    info['version'] or 'unable to detect version',
-                )
+                f"    ! {dependency}: {info['path'] or 'unable to find binary'} ({info['version'] or 'unable to detect version'})"
             )
             if dependency in ('YOUTUBEDL_BINARY', 'CHROME_BINARY', 'SINGLEFILE_BINARY', 'READABILITY_BINARY', 'MERCURY_BINARY'):
                 hint(('To install all packages automatically run: archivebox setup',
@@ -1100,9 +1308,9 @@ def check_migrations(out_dir: Union[str, Path, None]=None, config: ConfigDict=CO
     output_dir = out_dir or config['OUTPUT_DIR']
     from .index.sql import list_migrations
 
-    pending_migrations = [name for status, name in list_migrations() if not status]
-
-    if pending_migrations:
+    if pending_migrations := [
+        name for status, name in list_migrations() if not status
+    ]:
         stderr('[X] This collection was created with an older version of ArchiveBox and must be upgraded first.', color='lightyellow')
         stderr(f'    {output_dir}')
         stderr()
